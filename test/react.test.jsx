@@ -1,5 +1,6 @@
 import { afterAll, afterEach, describe, it, expect } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent } from "@testing-library/react";
+import { useState } from "react";
 
 const numbers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
 const rows = [[7, 8, 9], [4, 5, 6], [1, 2, 3], [0]];
@@ -7,15 +8,19 @@ const operations = ["+", "-", "*", "/"];
 const equalSign = "=";
 
 const Calculator = () => {
+  const [value, setValue] = useState("");
+  const createHandleNumber = (number) => () => setValue(value.concat(number));
   return (
     <section>
       <h1>Calculator</h1>
-      <input/>
+      <input value={value} readOnly />
       <div role="grid">
         {rows.map((row, idx) => (
           <div key={idx} role="row">
             {row.map((number) => (
-              <span key={number}>{number}</span>
+              <button onClick={createHandleNumber(number)} key={number}>
+                {number}
+              </button>
             ))}
           </div>
         ))}
@@ -63,11 +68,35 @@ describe("Calculator", () => {
 
   it("should render equal sign", () => {
     render(<Calculator />);
-    screen.getByText('=');
+    screen.getByText("=");
   });
 
   it("should render an input", () => {
     render(<Calculator />);
-    screen.getByRole('textbox');
+    screen.getByRole("textbox");
+  });
+
+  it("should user input after clicking a number", () => {
+    render(<Calculator />);
+    const one = screen.getByText("1");
+    fireEvent.click(one);
+
+    const input = screen.getByRole("textbox");
+    expect(input.value).toBe("1");
+  });
+
+  it("should user input after clicking several numbers", () => {
+    render(<Calculator />);
+    const one = screen.getByText("1");
+    fireEvent.click(one);
+
+    const two = screen.getByText("2");
+    fireEvent.click(two);
+
+    const three = screen.getByText("3");
+    fireEvent.click(three);
+
+    const input = screen.getByRole("textbox");
+    expect(input.value).toBe("123");
   });
 });
